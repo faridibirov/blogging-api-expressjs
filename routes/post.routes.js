@@ -1,10 +1,11 @@
 import { Router } from "express";
 import postController from "../controller/post.controller.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/posts", postController.createPost);
-router.get("/me/posts", postController.getMyPosts);
+router.post("/posts", authMiddleware, postController.createPost);
+router.get("/me/posts", authMiddleware,  postController.getMyPosts);
 router.get("/posts", postController.getPosts);
 router.get("/posts/:id", postController.getPostById);
 router.put("/posts/:id", postController.updatePost);

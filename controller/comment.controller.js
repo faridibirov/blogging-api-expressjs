@@ -40,13 +40,30 @@ class CommentController {
   async deleteComment(req, res) {
     try {
       const { id } = req.params;
+      
+      const commentResult = await pool.query(
+        `SELECT c.id, c.post_id, p.author_id
+        FROM comments c
+        JOIN posts p ON c.post_id = p.id
+        WHERE c.id = $1`,
+        [id]
+      );
+
+      if (commentResult.rows.length === 0) {
+        return res.status(404).send("Comment not found");
+      }
+
+      const comment = commentResult.rows[0];
+
+      if (req.user.role !== 'admin' && req.user.id !== comment.author_id) {
+        return res.status(403).send("Forbidden: Only post author or admin can delete comments");
+      }
+      
       const result = await pool.query(
         "DELETE FROM comments WHERE id = $1 RETURNING *",
         [id]
       );
-      if (result.rows.length === 0) {
-        return res.status(404).send("Comment not found");
-      }
+
       res.json({ message: "Comment deleted", comment: result.rows[0] });
     } catch (err) {
       console.error(err);
