@@ -3,13 +3,38 @@ import pool from "../config/db.js";
 class PostController {
   async createPost(req, res) {
     try {
-      const { title, content, status, author_id } = req.body;
+      const { title, content, status, tags } = req.body;
       const result = await pool.query(
         "INSERT INTO posts (title, content, status, author_id) VALUES ($1, $2, $3, $4) RETURNING *",
-        [title, content, status || "draft", author_id]
+        [title, content, status || "draft", req.user.id]
       );
 
-      res.json(result.rows[0]);
+      const post = result.rows[0];
+
+      if (tags && tags.length > 0) {
+        for (let tagName of tags) {
+          let tagResult = await pool.query(
+            "SELECT id FROM tags WHERE name = $1",
+            [tagName]
+          );
+          let tagId;
+
+          if (tagResult.rows.length === 0) {
+            const newTag = await pool.query(
+              "INSERT INTO tags (name) VALUES ($1) RETURNING id",
+              [tagName]
+            );
+            tagId = newTag.rows[0].id;
+          } else {
+            tagId = tagResult.rows[0].id;
+          }
+          await pool.query(
+            "INSERT INTO post_tags (post_id, tag_id) VALUES ($1, $2)",
+            [post.id, tagId]
+          );
+        }
+      }
+      res.json(post);
     } catch (err) {
       console.error(err);
       res.status(500).send("Error creating post");
@@ -33,16 +58,22 @@ class PostController {
   async getPosts(req, res) {
     try {
       const { author } = req.query;
-      let query = "SELECT * FROM posts WHERE status='published'";
+      let query = `SELECT p.*, u.username AS author, 
+          COALESCE(array_agg(t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags
+          FROM posts p
+          JOIN users u ON p.author_id = u.id 
+          LEFT JOIN post_tags pt ON p.id = pt.post_id
+          LEFT JOIN tags t ON pt.tag_id = t.id
+          WHERE p.status = 'published'`;
 
       let params = [];
 
       if (author) {
-        query += " AND author_id = $1";
+        query += " AND p.author_id = $1";
         params.push(author);
       }
 
-      query += " ORDER BY created_at DESC";
+      query += " GROUP BY p.id, u.username ORDER BY p.created_at DESC;";
 
       const result = await pool.query(query, params);
 
@@ -75,7 +106,13 @@ class PostController {
         [id]
       );
 
+      const tagsResult = await pool.query(
+        `SELECT t.name FROM post_tags pt JOIN tags t ON pt.tag_id = t.id WHERE pt.post_id = $1;`,
+        [id]
+      );
+
       post.comments = commentsResult.rows;
+      post.tags = tagsResult.rows.map((row) => row.name);
 
       if (post.status !== "published") {
         if (
