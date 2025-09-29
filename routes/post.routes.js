@@ -5,10 +5,10 @@ import authMiddleware from "../middleware/authMiddleware.js";
 const router = Router();
 
 router.post("/posts", authMiddleware, postController.createPost);
-router.get("/me/posts", authMiddleware,  postController.getMyPosts);
+router.get("/me/posts", authMiddleware, postController.getMyPosts);
 router.get("/posts", postController.getPosts);
 router.get("/posts/:id", postController.getPostById);
-router.put("/posts/:id", postController.updatePost);
+router.put("/posts/:id", authMiddleware, postController.updatePost);
 router.delete("/posts/:id", postController.deletePost);
 
 export default router;

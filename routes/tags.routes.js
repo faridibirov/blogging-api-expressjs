@@ -4,7 +4,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/tags",  tagsController.createTag);
+router.post("/tags", authMiddleware, tagsController.createTag);
 router.get("/tags/", tagsController.getTags);
 
 export default router;
