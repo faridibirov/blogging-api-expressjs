@@ -9,6 +9,6 @@ router.get("/me/posts", authMiddleware, postController.getMyPosts);
 router.get("/posts", postController.getPosts);
 router.get("/posts/:id", postController.getPostById);
 router.put("/posts/:id", authMiddleware, postController.updatePost);
-router.delete("/posts/:id", postController.deletePost);
+router.delete("/posts/:id", authMiddleware, postController.deletePost);
 
 export default router;
