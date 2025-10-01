@@ -1,30 +1,33 @@
-# Blogging Platform API  
+# Blogging Platform API
 
 A **RESTful API** built with **Express.js** and **PostgreSQL** for managing users, posts, comments, and tags.  
-This project supports authentication with JWT, role-based permissions (admin, author), and features like searching, filtering, tagging, and pagination.  
+This project supports authentication with JWT, role-based permissions (admin, author), and features like searching, filtering, tagging, and pagination.
 
 ---
 
 ## 🚀 Features
-- User registration & login with hashed passwords  
-- JWT authentication & role-based access (admin, author)  
-- Post CRUD (authors can only manage their own posts, admins can manage all)  
-- Comments (any authenticated user can comment, only owners/admins can delete)  
-- Tags (assign multiple tags to posts, filter by tag)  
-- Filtering, search (title/content), and pagination  
-- PostgreSQL database schema with SQL dump  
-- Postman collection for testing all endpoints  
+
+- User registration & login with hashed passwords
+- JWT authentication & role-based access (admin, author)
+- Post CRUD (authors can only manage their own posts, admins can manage all)
+- Comments (any authenticated user can comment, only owners/admins can delete)
+- Tags (assign multiple tags to posts, filter by tag)
+- Filtering, search (title/content), and pagination
+- PostgreSQL database schema with SQL dump
+- Postman collection for testing all endpoints
 
 ---
 
 ## 🛠️ Requirements
-- Node.js (v18+)  
-- PostgreSQL (v14+)  
-- npm or yarn  
+
+- Node.js (v18+)
+- PostgreSQL (v14+)
+- npm or yarn
 
 ---
 
 ## 📂 Project Structure
+
 ```
 - /config -> database connection
 - /controllers -> request handlers
@@ -33,22 +36,28 @@ This project supports authentication with JWT, role-based permissions (admin, au
 - /docs -> API documentation, Postman collection, DB dump
 - index.js -> app entry point
 ```
+
 ---
 
 ## ⚙️ Setup & Installation
+
 ### 1. Clone the repository
+
 ```cmd
 git clone https://github.com/faridibirov/blogging-api-expressjs.git
 cd blogging-api-expressjs
 ```
 
 ### 2. Install dependencies
+
 ```cmd
 npm install
 ```
+
 ### 3. Configure environment variables
 
 Create a .env file in the root directory:
+
 ```
 PORT=5000
 DB_HOST=localhost
@@ -58,14 +67,23 @@ DB_PASSWORD=yourpassword
 DB_NAME=blogging_platform
 JWT_SECRET=supersecretkey
 ```
+
 ### 4. Setup database
 
+- Schema and example data included in:
+
+```
+ docs/blogging_platform.sql
+```
+
 Create a new PostgreSQL database:
+
 ```sql
 CREATE DATABASE blogging_platform;
 ```
 
-Import schema and sample data (optional):
+Import schema:
+
 ```sql
 psql -U postgres -d blogging_platform -f docs/blogging_platform.sql
 ```
@@ -73,185 +91,215 @@ psql -U postgres -d blogging_platform -f docs/blogging_platform.sql
 ### 5. Run the server
 
 Development (with auto-restart):
+
 ```cmd
 npm run dev
 ```
 
 Production:
+
 ```cmd
 npm start
 ```
 
 Server should now be running at:
-```link
+
+```
 👉 http://localhost:5000
 ```
 
-##📬 Postman Collection
+---
 
-Import docs/BloggingPlatform.postman_collection.json into Postman.
+## 📬 Postman Collection
 
-Set up an Environment with variables:
+1. Import `_docs/BloggingPlatform.postman_collection.json_` into Postman.
 
-baseUrl → http://localhost:5000/api
+2. Set up an Environment with variables:
 
-token → (empty initially)
+   - baseUrl → ` http://localhost:5000/api`
 
-First run the Login request. The token will automatically be stored.
+   - token → (empty initially)
 
-Use the token for authorized requests (Posts, Comments, Tags).
+3. First run the Login request. The token will automatically be stored.
 
-🔑 Authentication & Roles
+4. Use the token for authorized requests (Posts, Comments, Tags).
 
-JWT authentication required for most endpoints
+---
 
-Roles:
+## 🔑 Authentication & Roles
 
-admin → full access to everything
+- JWT authentication required for most endpoints
 
-author → can manage only their own posts & comments
+- Roles:
 
-Public endpoints:
+  - admin → full access to everything
 
-Register, Login, Get Posts (published only), Get Tags, Get Post by ID
+  - author → can manage only their own posts & comments
 
-📌 Endpoints
-Auth
+- Public endpoints:
+
+  - Register, Login, Get Posts (published only), Get Tags, Get Post by ID
+
+---
+
+## 📌 Endpoints
+
+### Auth
+
 Register User
 
-POST /api/users
+- POST /api/users
 
-Roles: Public
+- Roles: Public
 
-Body:
+- Body:
 
+```json
 {
   "username": "john",
   "email": "john@example.com",
   "password": "123456",
   "role": "author"
 }
+```
 
 Login
 
-POST /api/login
+- POST /api/login
 
-Roles: Public
+- Roles: Public
 
-Body:
+- Body:
 
+```json
 {
   "email": "john@example.com",
   "password": "123456"
 }
+```
 
+- Response:
 
-Response:
-
+```json
 { "token": "JWT_TOKEN" }
+```
 
-Posts
+Get Users
+
+- GET /api/users
+
+- Roles: Authenticated (Author/Admin)
+
+### Posts
+
 Create Post
 
-POST /api/posts
+- POST /api/posts
 
-Roles: Authenticated (Author/Admin)
+- Roles: Authenticated (Author/Admin)
 
-Requires: Bearer token
+- Requires: Bearer token
 
-Body:
+- Body:
 
+```json
 {
   "title": "My Post",
   "content": "This is my content",
   "status": "published",
   "tags": ["nodejs", "backend"]
 }
+```
 
 Get All Posts
 
-GET /api/posts
+- GET /api/posts
 
-Roles: Public
+- Roles: Public
 
-Query params:
+- Query params:
 
-author=1
+  - author=1
 
-tag=nodejs
+  - tag=nodejs
 
-search=api
+  - search=api
 
-page=1&limit=5
+  - page=1&limit=5
 
 Get Single Post
 
-GET /api/posts/:id
+- GET /api/posts/:id
 
-Roles: Public
+- Roles: Public
 
-Note: Draft posts are only visible to the post owner or admins.
+- Note: Draft posts are only visible to the post owner or admins.
+
+Get My Posts
+
+- GET /api/me/posts
+
+- Roles: Authenticated (Author/Admin)
 
 Update Post
 
-PUT /api/posts/:id
+- PUT /api/posts/:id
 
-Roles: Post owner or Admin
+- Roles: Post owner or Admin
 
 Delete Post
 
-DELETE /api/posts/:id
+- DELETE /api/posts/:id
 
-Roles: Post owner or Admin
+- Roles: Post owner or Admin
 
-Comments
+### Comments
+
 Create Comment
 
-POST /api/comments
+- POST /api/comments
 
-Roles: Any authenticated user
+- Roles: Any authenticated user
 
-Body:
+- Body:
 
+```json
 {
   "post_id": 1,
   "content": "Great post!"
 }
+```
 
 Delete Comment
 
-DELETE /api/comments/:id
+- DELETE /api/comments/:id
 
-Roles: Comment owner or Admin
+- Roles: Comment owner or Admin
 
-Tags
+Get Comments by Post
+
+- GET /api/posts/:id/comments
+
+- Roles: Public
+
+### Tags
+
 Create Tag
 
-POST /api/tags
+- POST /api/tags
 
-Roles: Admin (or Author if allowed in your setup)
+- Roles: Admin or Authors
 
-Body:
+- Body:
 
+```json
 { "name": "javascript" }
+```
 
 Get Tags
 
-GET /api/tags
+- GET /api/tags
 
-Roles: Public
+- Roles: Public
 
-📦 Database
-
-Schema and example data included in:
-
-docs/blogging_platform.sql
-
-
-Import into PostgreSQL with:
-
-psql -U postgres -d blogging_platform -f docs/blogging_platform.sql
-
-📝 License
-
-This project is for educational purposes only.
+---

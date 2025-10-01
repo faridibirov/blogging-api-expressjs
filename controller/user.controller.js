@@ -3,14 +3,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 class UserController {
-
   async loginUser(req, res) {
     try {
       const { email, password } = req.body;
-      const result = await pool.query(
-        "SELECT * FROM users WHERE email = $1",
-        [email]
-      );
+      const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+        email,
+      ]);
 
       if (result.rows.length === 0) {
         return res.status(400).send("User not found");
@@ -22,9 +20,9 @@ class UserController {
       }
 
       const token = jwt.sign(
-        { id:user.id, role:user.role },
+        { id: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES}
+        { expiresIn: process.env.JWT_EXPIRES }
       );
 
       user.token = token;
@@ -33,7 +31,7 @@ class UserController {
     } catch (err) {
       console.error(err);
       res.status(500).send("Error logging in");
-    } 
+    }
   }
 
   async createUser(req, res) {
@@ -50,6 +48,9 @@ class UserController {
       res.json(user);
     } catch (err) {
       console.error(err);
+      if (err.code === "23505") {
+        return res.status(400).send("Username or email already exists");
+      }
       res.status(500).send("Error creting user");
     }
   }
