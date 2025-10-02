@@ -70,7 +70,7 @@ JWT_SECRET=supersecretkey
 
 ### 4. Setup database
 
-- Schema and example data included in:
+- Schema included in:
 
 ```
  docs/blogging_platform.sql
@@ -112,11 +112,11 @@ Server should now be running at:
 
 ## 📬 Postman Collection
 
-1. Import `_docs/BloggingPlatform.postman_collection.json_` into Postman.
+1. Import `docs/BloggingPlatform.postman_collection.json` into Postman.
 
 2. Set up an Environment with variables:
 
-   - baseUrl → ` http://localhost:5000/api`
+   - baseUrl → `http://localhost:5000/api`
 
    - token → (empty initially)
 

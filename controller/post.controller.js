@@ -43,7 +43,7 @@ class PostController {
 
   async getMyPosts(req, res) {
     try {
-      const { userId } = req.user.id;
+      const userId = req.user.id;
       const result = await pool.query(
         "SELECT * FROM posts WHERE author_id = $1 ORDER BY created_at DESC",
         [userId]
